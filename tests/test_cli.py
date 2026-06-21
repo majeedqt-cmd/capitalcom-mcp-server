@@ -113,3 +113,38 @@ def test_doctor_offline_by_default(monkeypatch):
     rc = cli.cmd_doctor(cli.build_parser().parse_args(["doctor"]))
     assert rc == 0
     assert called["login"] is False
+
+
+def test_config_prints_redacted_view(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_load_config", lambda: _fake_cfg(cap_api_key="supersecretkey"))
+    rc = cli.cmd_config(cli.build_parser().parse_args(["config"]))
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "Effective configuration" in out
+    assert "supersecretkey" not in out   # never print the full secret
+    assert "su***" in out                # _redact: first 2 chars + ***
+    assert "CAP_ALLOW_TRADING" in out
+    assert "max_open_positions" in out
+
+
+def test_config_missing_creds(monkeypatch, capsys):
+    from capital_cli.core.errors import ConfigMissingError
+
+    def boom():
+        raise ConfigMissingError("Missing CAP_API_KEY")
+
+    monkeypatch.setattr(cli, "_load_config", boom)
+    rc = cli.cmd_config(cli.build_parser().parse_args(["config"]))
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "init" in out
+
+
+def test_config_source_detects_cmd(monkeypatch, capsys):
+    monkeypatch.setenv("CAP_API_KEY_CMD", "echo k")
+    monkeypatch.setattr(cli, "_load_config", _fake_cfg)
+    rc = cli.cmd_config(cli.build_parser().parse_args(["config"]))
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "secret-exec" in out
+    assert "CAP_API_KEY_CMD" in out

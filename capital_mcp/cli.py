@@ -116,6 +116,59 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---- config --------------------------------------------------------------
+
+
+def _creds_source(env_file: str | None) -> str:
+    cmd_vars = [
+        v
+        for v in ("CAP_API_KEY_CMD", "CAP_IDENTIFIER_CMD", "CAP_API_PASSWORD_CMD")
+        if os.environ.get(v)
+    ]
+    if cmd_vars:
+        return f"secret-exec ({', '.join(cmd_vars)})"
+    if env_file:
+        return "env file (CAP_ENV_FILE)"
+    return "process environment"
+
+
+def _print_config_view(cfg) -> None:
+    print("Effective configuration (secrets redacted):")
+    print(f"  CAP_ENV                = {cfg.cap_env.value}")
+    print(f"  base_url               = {cfg.base_url}")
+    print(f"  CAP_API_KEY            = {_redact(cfg.cap_api_key)}")
+    print(f"  CAP_IDENTIFIER         = {_redact(cfg.cap_identifier)}")
+    print(f"  CAP_ALLOW_TRADING      = {cfg.cap_allow_trading}")
+    print(f"  CAP_ALLOWED_EPICS      = {cfg.cap_allowed_epics or '(none)'}")
+    print(f"  CAP_WS_ENABLED         = {cfg.cap_ws_enabled}")
+    print(f"  CAP_DRY_RUN            = {cfg.cap_dry_run}")
+    print(f"  max_position_size      = {cfg.cap_max_position_size}")
+    print(f"  max_working_order_size = {cfg.cap_max_working_order_size}")
+    print(f"  max_open_positions     = {cfg.cap_max_open_positions}")
+    print(f"  max_orders_per_day     = {cfg.cap_max_orders_per_day}")
+    print(f"  require_confirm        = {cfg.cap_require_explicit_confirm}")
+    env_file = os.environ.get("CAP_ENV_FILE")
+    print(f"  credentials source     = {_creds_source(env_file)}")
+    if env_file:
+        print(f"  CAP_ENV_FILE           = {env_file}")
+
+
+def cmd_config(args: argparse.Namespace) -> int:
+    from capital_cli.core.errors import ConfigMissingError
+
+    try:
+        cfg = _load_config()
+    except ConfigMissingError as exc:
+        print(f"x No credentials configured: {exc}")
+        print("  Run `capitalcom-mcp init` (or set CAP_ENV_FILE / CAP_*_CMD), then re-run `config`.")
+        return 1
+    except Exception as exc:  # noqa: BLE001
+        print(f"x Configuration error: {exc}")
+        return 1
+    _print_config_view(cfg)
+    return 0
+
+
 # ---- init ----------------------------------------------------------------
 
 
@@ -178,6 +231,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--login", action="store_true", help="also test authentication against the API"
     )
     p_doctor.set_defaults(func=cmd_doctor)
+
+    p_config = sub.add_parser("config", help="show the effective config (redacted, no network)")
+    p_config.set_defaults(func=cmd_config)
 
     p_init = sub.add_parser("init", help="interactive credential setup")
     p_init.add_argument("--path", default=None, help="env-file path (default ~/.config/capital-mcp/.env)")
