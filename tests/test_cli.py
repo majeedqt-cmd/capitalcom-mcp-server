@@ -91,6 +91,8 @@ def test_doctor_login_success(monkeypatch, capsys):
     assert rc == 0
     assert "Login OK" in out
     assert "ABC123" in out
+    assert "abcd1234" not in out   # full key never printed
+    assert "ab***" in out          # key shown redacted
 
 
 def test_doctor_login_failure(monkeypatch, capsys):
