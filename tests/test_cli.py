@@ -1,7 +1,29 @@
 import os
 import stat
+from types import SimpleNamespace
 
 from capital_mcp import cli
+
+
+def _fake_cfg(**over):
+    base = {
+        "cap_env": SimpleNamespace(value="demo"),
+        "cap_api_key": "abcd1234",
+        "cap_identifier": "me@example.com",
+        "cap_api_password": "sekret",
+        "cap_allow_trading": False,
+        "cap_allowed_epics": "",
+        "cap_ws_enabled": False,
+        "cap_dry_run": False,
+        "cap_max_position_size": 1.0,
+        "cap_max_working_order_size": 1.0,
+        "cap_max_open_positions": 3,
+        "cap_max_orders_per_day": 20,
+        "cap_require_explicit_confirm": True,
+        "base_url": "https://demo-api-capital.backend-capital.com",
+    }
+    base.update(over)
+    return SimpleNamespace(**base)
 
 
 def test_build_parser_defaults():
@@ -58,3 +80,36 @@ def test_doctor_reports_missing(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert rc == 1
     assert "Missing" in out
+    assert "init" in out
+
+
+def test_doctor_login_success(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_load_config", _fake_cfg)
+    monkeypatch.setattr(cli, "_try_login", lambda: {"accountId": "ABC123"})
+    rc = cli.cmd_doctor(cli.build_parser().parse_args(["doctor", "--login"]))
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "Login OK" in out
+    assert "ABC123" in out
+
+
+def test_doctor_login_failure(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_load_config", _fake_cfg)
+
+    def boom():
+        raise RuntimeError("bad creds")
+
+    monkeypatch.setattr(cli, "_try_login", boom)
+    rc = cli.cmd_doctor(cli.build_parser().parse_args(["doctor", "--login"]))
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "Login failed" in out
+
+
+def test_doctor_offline_by_default(monkeypatch):
+    monkeypatch.setattr(cli, "_load_config", _fake_cfg)
+    called = {"login": False}
+    monkeypatch.setattr(cli, "_try_login", lambda: called.__setitem__("login", True) or {})
+    rc = cli.cmd_doctor(cli.build_parser().parse_args(["doctor"]))
+    assert rc == 0
+    assert called["login"] is False

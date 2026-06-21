@@ -40,6 +40,26 @@ def _load_config():
     return CapitalComConfig.from_env()
 
 
+def _try_login() -> dict:
+    """Build the app, authenticate once, then close it. Returns the login result.
+
+    A thin I/O seam (monkeypatched in tests), like _load_config / _prompt.
+    """
+    import asyncio
+
+    from capital_mcp.context import get_app, reset_app
+
+    async def _run() -> dict:
+        app = get_app()
+        try:
+            return await app.session.login()
+        finally:
+            await app.__aexit__(None, None, None)
+            reset_app()
+
+    return asyncio.run(_run())
+
+
 # ---- run -----------------------------------------------------------------
 
 
@@ -66,8 +86,16 @@ def _redact(value: str | None) -> str:
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
+    from capital_cli.core.errors import ConfigMissingError
+
     try:
         cfg = _load_config()
+    except ConfigMissingError as exc:
+        print(f"x No credentials configured: {exc}")
+        print("  Fix: run `capitalcom-mcp init` to write a 0600 .env, or set")
+        print("       CAP_ENV_FILE / CAP_API_KEY / CAP_IDENTIFIER / CAP_API_PASSWORD")
+        print("       (or the CAP_*_CMD secret-exec variants).")
+        return 1
     except Exception as exc:  # noqa: BLE001 — report any config failure cleanly
         print(f"x Configuration error: {exc}")
         return 1
@@ -78,6 +106,13 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     print(f"  CAP_ALLOW_TRADING= {cfg.cap_allow_trading}")
     print(f"  CAP_ALLOWED_EPICS= {cfg.cap_allowed_epics or '(none)'}")
     print(f"  base_url         = {cfg.base_url}")
+    if getattr(args, "login", False):
+        try:
+            result = _try_login()
+        except Exception as exc:  # noqa: BLE001 — surface auth failure cleanly
+            print(f"x Login failed: {exc}")
+            return 1
+        print(f"Login OK: {result}")
     return 0
 
 
@@ -139,6 +174,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.set_defaults(func=cmd_run)
 
     p_doctor = sub.add_parser("doctor", help="validate config + credentials")
+    p_doctor.add_argument(
+        "--login", action="store_true", help="also test authentication against the API"
+    )
     p_doctor.set_defaults(func=cmd_doctor)
 
     p_init = sub.add_parser("init", help="interactive credential setup")
