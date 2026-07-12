@@ -1,4 +1,4 @@
-.PHONY: install test cov lint fmt typecheck run e2e check snapshot wiki
+.PHONY: install test cov lint fmt typecheck run e2e check snapshot wiki wiki-check
 
 install:
 	pip install -e ".[dev]"
@@ -31,3 +31,14 @@ snapshot: ## regenerate the frozen API-surface golden (after an intentional chan
 
 wiki: ## regenerate the wiki reference pages into wiki/
 	python scripts/gen_wiki.py
+
+wiki-check: ## fail if the committed wiki reference pages are stale
+	@tmp=$$(mktemp -d); \
+	python scripts/gen_wiki.py $$tmp >/dev/null; \
+	rc=0; \
+	for f in Tools-Reference Resources-Reference Prompts-Reference Configuration-Reference Error-Reference; do \
+	  diff -u wiki/$$f.md $$tmp/$$f.md || rc=1; \
+	done; \
+	rm -rf $$tmp; \
+	if [ $$rc -ne 0 ]; then echo "wiki reference is STALE — run 'make wiki' and commit"; exit 1; fi; \
+	echo "wiki reference pages up to date"
