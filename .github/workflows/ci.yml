@@ -30,6 +30,8 @@ jobs:
         run: mypy capital_mcp
       - name: Offline tests
         run: pytest -q          # excludes e2e via the -m "not e2e" default
+      - name: Wiki reference up to date
+        run: make wiki-check
 
   e2e:
     name: full demo e2e via MCP (all tools)
