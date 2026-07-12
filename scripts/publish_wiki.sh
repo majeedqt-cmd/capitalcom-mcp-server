@@ -10,7 +10,9 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 git clone --depth 1 "https://github.com/${REPO}.wiki.git" "$TMP/wiki"
-# Overwrite the wiki with our source-of-truth pages (including _Sidebar/_Footer).
+# Add/update the wiki with our source-of-truth pages (including _Sidebar/_Footer).
+# This is a merge-overwrite, not an exact mirror: it does not delete pages that
+# exist live but have no corresponding file in wiki/.
 cp "$SRC"/*.md "$TMP/wiki/"
 cd "$TMP/wiki"
 git add -A

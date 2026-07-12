@@ -24,8 +24,8 @@ know what the guardrails do, then point your client at a demo account.
 
 **Developers** — you want to extend the server, add a tool, or understand how
 the two-phase execution and risk checks are implemented. Start with the
-[[Tools Reference]] for the full tool surface, then see the contributing pages
-for the codebase architecture.
+[[Tools Reference]] for the full tool surface, then see [[Architecture]] and
+[[Contributing]] for the codebase design.
 
 ## Quick links
 

@@ -3,6 +3,11 @@
 Credential-free: introspects the in-memory FastMCP server (which starts without
 credentials) plus the capital_cli config model and error classes. Writes Markdown
 into the repo's wiki/ directory. Run via `make wiki`.
+
+Note: because output is derived from the installed capitalcom-cli SDK, even a
+patch-level bump of that dependency can change the generated pages — if CI
+reports the wiki is stale after a routine dependency update, just re-run
+`make wiki` and commit the diff.
 """
 
 from __future__ import annotations

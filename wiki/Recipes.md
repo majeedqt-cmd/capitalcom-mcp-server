@@ -76,7 +76,7 @@ on its own — see [[Prompts Reference]].
 Launch it by name from your MCP client, optionally with arguments:
 
 ```
-market_scan(watchlist_id="<id from cap_watchlists_list>", timeframe="HOUR", lookback_periods=50)
+market_scan(watchlist_id="<id from cap_watchlists_list>", timeframe="HOUR", lookback_periods=24)
 ```
 
 Under the hood it's just `cap_watchlists_get` + `cap_market_prices` (+
