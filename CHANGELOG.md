@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- CLI: a `config` command (redacted effective configuration + credential source)
+  and a `doctor --login` flag that verifies authentication. `doctor` now prints
+  actionable guidance (pointing to `init`) when credentials are missing.
 - API-surface snapshot test (`tests/test_api_surface_snapshot.py`) and a
   published stability contract (`docs/api-stability.md`) freezing the 42 tools,
   4 resources, and 7 prompts. The surface is now enforced in CI.

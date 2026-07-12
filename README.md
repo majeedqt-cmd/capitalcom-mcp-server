@@ -77,6 +77,14 @@ This writes `~/.config/capital-mcp/.env`. Verify any time (no secrets printed):
 uvx capitalcom-mcp doctor
 ```
 
+Inspect the full effective configuration (redacted, offline) or confirm your
+credentials actually authenticate:
+
+```bash
+uvx capitalcom-mcp config          # effective settings + credential source
+uvx capitalcom-mcp doctor --login  # verify authentication against the API
+```
+
 Prefer a secret manager? Set `CAP_API_KEY_CMD` / `CAP_IDENTIFIER_CMD` /
 `CAP_API_PASSWORD_CMD` to a command that prints the secret (e.g.
 `op read op://vault/...`, `pass ...`). The secret is fetched at launch and never
