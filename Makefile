@@ -30,11 +30,11 @@ snapshot: ## regenerate the frozen API-surface golden (after an intentional chan
 	UPDATE_SNAPSHOT=1 pytest tests/test_api_surface_snapshot.py -q
 
 wiki: ## regenerate the wiki reference pages into wiki/
-	python scripts/gen_wiki.py
+	python3 scripts/gen_wiki.py
 
 wiki-check: ## fail if the committed wiki reference pages are stale
 	@tmp=$$(mktemp -d); \
-	python scripts/gen_wiki.py $$tmp >/dev/null; \
+	python3 scripts/gen_wiki.py $$tmp >/dev/null; \
 	rc=0; \
 	for f in Tools-Reference Resources-Reference Prompts-Reference Configuration-Reference Error-Reference; do \
 	  diff -u wiki/$$f.md $$tmp/$$f.md || rc=1; \
