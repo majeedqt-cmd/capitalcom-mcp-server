@@ -20,7 +20,7 @@ Settings are read from environment variables (or a `.env` file / `CAP_*_CMD` sec
 | `CAP_MAX_ORDERS_PER_DAY` | int | `20` | — |
 | `CAP_REQUIRE_EXPLICIT_CONFIRM` | bool | `True` | — |
 | `CAP_DRY_RUN` | bool | `False` | — |
-| `CAP_DEFAULT_ACCOUNT_ID` | str | None | `None` | — |
+| `CAP_DEFAULT_ACCOUNT_ID` | str \| None | `None` | — |
 | `CAP_PERSIST_SESSION` | bool | `True` | Cache the short-lived session tokens in the state file (0600) so back-to-back invocations reuse them instead of re-logging in (avoids HTTP 429). Set false to disable. |
 | `CAP_HTTP_TIMEOUT_S` | float | `15.0` | — |
 | `CAP_LOG_LEVEL` | str | `'WARNING'` | — |

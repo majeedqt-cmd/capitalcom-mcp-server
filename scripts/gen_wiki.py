@@ -32,6 +32,11 @@ def _category(name: str) -> str:
     return "ChatGPT Deep Research adapters"
 
 
+def _cell(value: object) -> str:
+    """Escape a value for safe insertion into a Markdown table cell (GFM splits on `|`)."""
+    return str(value).replace("|", "\\|")
+
+
 def _schema_type(spec: dict) -> str:
     if "type" in spec:
         return str(spec["type"])
@@ -54,7 +59,7 @@ def _params_table(input_schema: dict | None) -> str:
     rows = ["| Parameter | Type | Required | Default |", "| --- | --- | --- | --- |"]
     for pname, spec in props.items():
         req = "**yes**" if pname in required else "no"
-        rows.append(f"| `{pname}` | {_schema_type(spec)} | {req} | {_schema_default(spec)} |")
+        rows.append(f"| `{pname}` | {_cell(_schema_type(spec))} | {req} | {_cell(_schema_default(spec))} |")
     return "\n".join(rows) + "\n"
 
 
@@ -84,9 +89,9 @@ async def _resources_page(client) -> str:
         "| URI | What it returns |", "| --- | --- |",
     ]
     for r in sorted(resources, key=lambda r: str(r.uri)):
-        out.append(f"| `{r.uri}` | {(r.description or '').strip()} |")
+        out.append(f"| `{r.uri}` | {_cell((r.description or '').strip())} |")
     for t in sorted(templates, key=lambda t: t.uriTemplate):
-        out.append(f"| `{t.uriTemplate}` | {(t.description or '').strip()} |")
+        out.append(f"| `{t.uriTemplate}` | {_cell((t.description or '').strip())} |")
     return "\n".join(out).rstrip() + "\n"
 
 
@@ -102,7 +107,7 @@ async def _prompts_page(client) -> str:
         args = p.arguments or []
         if args:
             out += ["| Argument | Required |", "| --- | --- |"]
-            out += [f"| `{a.name}` | {'**yes**' if a.required else 'no'} |" for a in sorted(args, key=lambda a: a.name)]
+            out += [f"| `{_cell(a.name)}` | {'**yes**' if a.required else 'no'} |" for a in sorted(args, key=lambda a: a.name)]
             out.append("")
         else:
             out += ["_No arguments._", ""]
@@ -129,7 +134,7 @@ def _config_page() -> str:
     for name, field in CapitalComConfig.model_fields.items():
         ann = getattr(field.annotation, "__name__", str(field.annotation))
         desc = (field.description or "").strip() or "—"
-        out.append(f"| `{name.upper()}` | {ann} | {_fmt_default(field)} | {desc} |")
+        out.append(f"| `{name.upper()}` | {_cell(ann)} | {_cell(_fmt_default(field))} | {_cell(desc)} |")
     return "\n".join(out).rstrip() + "\n"
 
 
@@ -153,7 +158,7 @@ def _errors_page() -> str:
         "| Error | Meaning |", "| --- | --- |",
     ]
     for name in sorted(seen):
-        out.append(f"| `{name}` | {seen[name] or '—'} |")
+        out.append(f"| `{name}` | {_cell(seen[name] or '—')} |")
     return "\n".join(out).rstrip() + "\n"
 
 
@@ -164,11 +169,11 @@ async def _amain() -> None:
 
     WIKI.mkdir(parents=True, exist_ok=True)
     async with Client(mcp) as client:
-        (WIKI / "Tools-Reference.md").write_text(await _tools_page(client))
-        (WIKI / "Resources-Reference.md").write_text(await _resources_page(client))
-        (WIKI / "Prompts-Reference.md").write_text(await _prompts_page(client))
-    (WIKI / "Configuration-Reference.md").write_text(_config_page())
-    (WIKI / "Error-Reference.md").write_text(_errors_page())
+        (WIKI / "Tools-Reference.md").write_text(await _tools_page(client), encoding="utf-8")
+        (WIKI / "Resources-Reference.md").write_text(await _resources_page(client), encoding="utf-8")
+        (WIKI / "Prompts-Reference.md").write_text(await _prompts_page(client), encoding="utf-8")
+    (WIKI / "Configuration-Reference.md").write_text(_config_page(), encoding="utf-8")
+    (WIKI / "Error-Reference.md").write_text(_errors_page(), encoding="utf-8")
     print(f"Wrote 5 reference pages to {WIKI}")
 
 

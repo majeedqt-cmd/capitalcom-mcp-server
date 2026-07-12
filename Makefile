@@ -13,7 +13,7 @@ lint:
 	ruff check capital_mcp tests scripts
 
 fmt:
-	ruff format capital_mcp tests
+	ruff format capital_mcp tests scripts
 
 typecheck:
 	mypy capital_mcp scripts
