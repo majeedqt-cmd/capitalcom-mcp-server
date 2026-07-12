@@ -1,4 +1,4 @@
-.PHONY: install test cov lint fmt typecheck run e2e check snapshot wiki wiki-check
+.PHONY: install test cov lint fmt typecheck run e2e check snapshot wiki wiki-check wiki-publish
 
 install:
 	pip install -e ".[dev]"
@@ -42,3 +42,6 @@ wiki-check: ## fail if the committed wiki reference pages are stale
 	rm -rf $$tmp; \
 	if [ $$rc -ne 0 ]; then echo "wiki reference is STALE — run 'make wiki' and commit"; exit 1; fi; \
 	echo "wiki reference pages up to date"
+
+wiki-publish: ## sync wiki/*.md to the LIVE GitHub wiki (publishes immediately)
+	bash scripts/publish_wiki.sh
