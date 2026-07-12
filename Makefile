@@ -1,4 +1,4 @@
-.PHONY: install test cov lint fmt typecheck run e2e check snapshot
+.PHONY: install test cov lint fmt typecheck run e2e check snapshot wiki
 
 install:
 	pip install -e ".[dev]"
@@ -10,13 +10,13 @@ cov:
 	pytest --cov=capital_mcp --cov-report=term-missing
 
 lint:
-	ruff check capital_mcp tests
+	ruff check capital_mcp tests scripts
 
 fmt:
 	ruff format capital_mcp tests
 
 typecheck:
-	mypy capital_mcp
+	mypy capital_mcp scripts
 
 run:
 	capitalcom-mcp run
@@ -28,3 +28,6 @@ check: lint typecheck test
 
 snapshot: ## regenerate the frozen API-surface golden (after an intentional change)
 	UPDATE_SNAPSHOT=1 pytest tests/test_api_surface_snapshot.py -q
+
+wiki: ## regenerate the wiki reference pages into wiki/
+	python scripts/gen_wiki.py
