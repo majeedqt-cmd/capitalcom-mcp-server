@@ -10,7 +10,7 @@ Status: **NOT DEPLOYED / NOT CONTINUOUSLY MONITORING** (20 October 2026).
 - GOLD reports streaming availability, USD contract size 1, minimum size and increment 0.01, margin factor 5 percent. These are observed account rules, not constants to assume for other accounts.
 - Saved n8n Slack credential initially failed with `channel_not_found`. `auth.test` confirmed TheBoard and bot `win alrets`. Adding that existing bot to the designated private channel fixed posting.
 - Successful n8n execution `5451`: 2026-10-20 07:20:36.737–07:20:37.264 UTC; Slack node 239 ms, full execution 527 ms. This does **not** measure market-to-Slack or delivery-to-phone latency.
-- Workflow `yEHnnx3l0FMmPMMl` was created in personal n8n project `MAJEED Alzaqut <majeed.qt@icloud.com>` at project root. It remains inactive.
+- Workflow `yEHnnx3l0FMmPMMl` was created in the user's personal n8n project at project root. It remains inactive.
 
 ## Implemented, locally tested
 
@@ -44,8 +44,8 @@ The available n8n tools can reference credentials, but cannot create a new share
 
 ## Local verification
 
-`python -m unittest test_noor_v2 -v` — 9 tests passed before the final runtime validation additions; rerun for the final commit.
+`python -m unittest test_noor_v2 -v` — 9 tests passed against the final worker/configuration source.
 
-Tests cover known indicator values, sizing/cost math, impossible minimum contracts, excess risk/low reward, a synthetic opportunity, stale/future/unclosed candles, unclear/opposing trend, hard mutation blocking, and disconnected-stream timeout. Broker WS, live worker reconnect, n8n dedup persistence and phone delivery are not yet verified.
+Tests cover known indicator values, sizing/cost math, impossible minimum contracts, excess risk/low reward, a synthetic opportunity, stale/future/unclosed candles, unclear/opposing trend, hard mutation blocking, and disconnected-stream timeout. Actual M5 history was also fetched from the connected Demo service and parsed: 220 closed bars, latest bar start 2026-10-20T07:30:00Z; indicator calculations completed. Broker WS, live worker reconnect, n8n dedup persistence and phone delivery are not yet verified.
 
 No Railway variables, start commands, deployments, account settings, trades, WIN services or Scalping Noor services were changed in this checkpoint.
